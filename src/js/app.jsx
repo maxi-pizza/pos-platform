@@ -1,30 +1,21 @@
-import '../css/main.scss';
-import React from 'react';
-import ReactDOM from 'react-dom';
+import "../css/main.scss";
+import React from "react";
+import ReactDOM from "react-dom";
 
-import HelloWorldApp from '../../examples/hello-world/app';
-import LoyaltyApp from '../../examples/loyalty/app';
-import DeviceHandshakeApp from '../../examples/device-handshake/app';
-import TextPrintApp from '../../examples/text-print/app';
-import PmsApp from '../../examples/pms/App';
+import LoyaltyApp from "./loyalty/app";
 
-class ExampleApp extends React.Component {
-    render() {
-        // Чтобы отобразить нужный пример просто закомментируйте не нужныйе компоненты
+window.refreshBuild = () => {
+  const scripts = document.querySelectorAll("script");
+  const script = [...scripts].find(
+    (script) => script.src.indexOf("https://localhost:5173") !== -1,
+  );
+  const newScript = document.createElement("script");
+  const [src] = script.src.split("?");
+  newScript.src = src + "?" + Date.now();
+  console.log("script tag removed", newScript.src);
+  document.head.appendChild(newScript);
+  console.log("script tag added", script.src);
+  document.head.removeChild(script);
+};
 
-        return <HelloWorldApp />;
-
-        return <LoyaltyApp />;
-
-        return <DeviceHandshakeApp />;
-
-        return <TextPrintApp />;
-
-        return <PmsApp />;
-    }
-}
-
-ReactDOM.render(
-    <ExampleApp />,
-    document.getElementById('app-container'),
-);
+ReactDOM.render(<LoyaltyApp />, document.getElementById("app-container"));

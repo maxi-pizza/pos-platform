@@ -6,7 +6,8 @@
   "scripts": {
     "preview": "vite preview",
     "dev": "vite serve",
-    "build": "vite build && mv dist/bundle.umd.cjs dist/bundle.js",
+    "build": "vite build",
+    "build:watch": "vite build --watch",
     "deploy": "node upload",
     "lint": "eslint . --ext .js,.jsx"
   },
@@ -42,6 +43,7 @@
     "eslint-plugin-jsx-a11y": "^6.1.2",
     "eslint-plugin-react": "^7.11.1",
     "md5": "^2.2.1",
+    "prettier": "^3.2.5",
     "request": "^2.88.0",
     "shelljs": "^0.8.5",
     "vite": "^5.2.9",
