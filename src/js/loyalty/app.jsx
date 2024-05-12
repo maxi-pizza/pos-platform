@@ -37,20 +37,24 @@ export default class LoyaltyApp extends React.Component {
         return;
       }
 
-      const { approvedBonus, platformDiscount } = activeOrder;
-      // Can the order have bonuses applied before it was accepted?
-      // I expect it can't
-      if (!approvedBonus || !platformDiscount) {
-        // notify me if I'm wrong
-        logError({
-          approvedBonus,
-          platformDiscount,
-        });
-      }
+      Poster.orders.setOrderBonus(activeOrder.id, bonusesUsed);
 
       // if the order had previously applied bonuses
       // will they be overwritten by setOrderBonus or will they accumulate?
-      Poster.orders.setOrderBonus(activeOrder.id, bonusesUsed);
+      // Lest check it
+
+      const { approvedBonus, platformDiscount } = activeOrder;
+
+      if (approvedBonus || platformDiscount) {
+        const activeOrder = await Poster.orders.getActive();
+
+        logError({
+          approvedBonus,
+          platformDiscount,
+          bonusesUsed,
+          activeOrder,
+        });
+      }
     } catch (error) {
       logError({
         error: error.message,

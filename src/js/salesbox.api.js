@@ -42,5 +42,6 @@ export const authenticate = async () => {
 };
 
 export const getOrder = async (id) => {
-  return (await apiClient.get(`/${COMPANY_ID}/orders/${id}?lang=uk`)).data;
+  const response = await apiClient.get(`/${COMPANY_ID}/orders/${id}?lang=uk`);
+  return response.data.data;
 };
