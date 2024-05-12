@@ -1,3 +1,3 @@
-# Salesbox integration into Poster Pos platform
+# Salesbox integration with Poster Pos platform
 
 Integrates salesbox cashback system into Poster Pos bonus system
