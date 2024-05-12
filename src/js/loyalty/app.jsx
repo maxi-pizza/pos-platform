@@ -1,70 +1,55 @@
-import BonusView from "./bonus.jsx";
-import { getOrder as getSalesboxOrder } from "../salesbox.api.js";
+import { authenticate, getOrder as getSalesboxOrder } from "../salesbox.api.js";
+import { extractSalesboxOrderIdFromComment } from "../utils.js";
+
+// authenticate asynchronously
+authenticate();
 
 export default class LoyaltyApp extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      activePopupId: null, // доступні варіанти: bonus
-      posterOrder: null,
-      salesboxOrder: null,
-    };
+    this.state = {};
   }
 
-  handleBeforeOrderClose = async (data, next) => {
-    // Сохранили callback чтобы закрыть заказ
-    this.next = next;
-    const orderId = "d71876ce-c3e7-4b87-be1e-283fea769ea3";
+  checkForCashback = async (data, next) => {
+    const { incomingOrder, order: activeOrder } = data;
+
+    const orderId = extractSalesboxOrderIdFromComment(incomingOrder.comment);
+
+    if (!orderId) {
+      // order comment doesn't contain salesbox order id
+      // it means this order wasn't made via salesbox app
+      return;
+    }
+
     try {
-      const [salesboxOrder, posterOrder] = await Promise.all([
-        getSalesboxOrder(orderId),
-        Poster.orders.getActive().then((response) => response.order),
-      ]);
+      const salesboxOrder = await getSalesboxOrder(orderId);
 
-      this.setState({
-        activePopupId: "bonus",
-        salesboxOrder,
-        posterOrder,
-      });
+      const bonusesUsed = salesboxOrder.bonusesUsed;
 
-      Poster.interface.popup({
-        width: 500,
-        height: 300,
-        title: "Списання бонусів",
-      });
+      if (!bonusesUsed) {
+        // a user hasn't applied any bonuses to the order
+        return;
+      }
+
+      Poster.orders.setOrderBonus(activeOrder.id, bonusesUsed);
     } catch (e) {
-      console.log(`Замовлення #${orderId} не знайдено`);
-      this.next();
+      // todo: log errors
+      console.log(e);
+    } finally {
+      next();
     }
   };
 
   componentDidMount() {
-    Poster.on("beforeOrderClose", this.handleBeforeOrderClose);
+    Poster.on("incomingOrderAccepted", this.checkForCashback);
+    Poster.on("beforeOrderClose", (data, next) => {
+      Poster.interface.closePopup();
+      next();
+    });
   }
 
-  withdrawBonus = (bonus) => {
-    const { posterOrder } = this.state;
-
-    Poster.orders.setOrderBonus(posterOrder.id, parseFloat(bonus));
-    Poster.interface.closePopup();
-
-    this.next();
-  };
-
   render() {
-    const { activePopupId, salesboxOrder, posterOrder } = this.state;
-
-    if (activePopupId === "bonus") {
-      return (
-        <BonusView
-          salesboxOrder={salesboxOrder}
-          posterOrder={posterOrder}
-          onWithdrawBonus={this.withdrawBonus}
-        />
-      );
-    }
-
     return <div />;
   }
 }

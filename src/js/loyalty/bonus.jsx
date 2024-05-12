@@ -5,20 +5,13 @@ export default class BonusView extends React.Component {
     this.state = {};
   }
 
-  updateInput = (e) => {
-    let { id, value } = e.target;
-    this.setState({ [id]: value });
-  };
-
   render() {
-    let { bonus } = this.state;
     const { salesboxOrder, onWithdrawBonus } = this.props;
 
     return (
       <form
         onSubmit={() => {
-          debugger;
-          onWithdrawBonus(this.state.bonus);
+          onWithdrawBonus(salesboxOrder.bonusesUsed);
         }}
       >
         {/** using hidden input for IOS 9 input focus and onChange fix **/}
@@ -27,19 +20,9 @@ export default class BonusView extends React.Component {
         <div className="row">
           <div className="col-xs-12">
             <p>
-              Користувач хоче списати {salesboxOrder.bonusesUsed} грн бонусів
+              Користувач мобільного додатку Salesbox хоче списати{" "}
+              {salesboxOrder.bonusesUsed} грн бонусів
             </p>
-
-            <label htmlFor="bonus">Списати</label>
-            <input
-              type="text"
-              placeholder="10.99 грн"
-              id="bonus"
-              defaultValue={salesboxOrder.bonusesUsed}
-              className="form-control"
-              value={bonus}
-              onChange={this.updateInput}
-            />
           </div>
         </div>
 
