@@ -20,6 +20,12 @@ export default class LoyaltyApp extends React.Component {
 
     const orderId = extractSalesboxOrderIdFromComment(incomingOrder.comment);
 
+    // Deleting salesbox order ID from the comment
+    Poster.orders.setOrderComment(
+      activeOrder.id,
+      activeOrder.comment.replace(/;\s*SalesboxOrderID:.*/, ""),
+    );
+
     if (!orderId) {
       // the order comment doesn't contain salesbox order id
       // this means the order wasn't made via salesbox app
@@ -39,7 +45,7 @@ export default class LoyaltyApp extends React.Component {
 
       Poster.orders.setOrderBonus(activeOrder.id, bonusesUsed);
 
-      // if the order had previously applied bonuses
+      // if bonuses have been applied to the order
       // will they be overwritten by setOrderBonus or will they accumulate?
       // Lest check it
 
