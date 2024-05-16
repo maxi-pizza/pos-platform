@@ -44,6 +44,7 @@ export default class LoyaltyApp extends React.Component {
       }
 
       Poster.orders.setOrderBonus(activeOrder.id, bonusesUsed);
+      // todo: change salesbox order status to accepted
 
       // if bonuses have been applied to the order
       // will they be overwritten by setOrderBonus or will they accumulate?
