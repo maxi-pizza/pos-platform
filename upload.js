@@ -2,7 +2,7 @@ import r from 'request';
 import md5 from 'md5';
 import fs from 'fs';
 import shell from 'shelljs';
-import manifest from './manifest.json' assert { type: 'json'};
+import manifest from './manifest.json' with { type: 'json'};
 
 const URL = 'https://platform.joinposter.com/api/application.uploadPOSPlatformBundle?format=json';
 const FILENAME = 'dist/bundle.js';

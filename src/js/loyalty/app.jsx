@@ -1,73 +1,24 @@
-import {
-  authenticate as authenticateSalesbox,
-  getOrder as getSalesboxOrder,
-} from "../salesbox.api.js";
-import { extractSalesboxOrderIdFromComment } from "../utils.js";
-import { logError } from "../maxipizza.api.js";
-
-// authenticate asynchronously as early as possible
-authenticateSalesbox();
+import { getOrder, logError } from "../restaurant";
+import React from "react";
 
 export default class LoyaltyApp extends React.Component {
   constructor(props) {
     super(props);
-
     this.state = {};
   }
-
-  checkForCashback = async (data, next) => {
-    const { incomingOrder, order: activeOrder } = data;
-
-    const orderId = extractSalesboxOrderIdFromComment(incomingOrder.comment);
-
-    // Deleting salesbox order ID from the comment
-    Poster.orders.setOrderComment(
-      activeOrder.id,
-      activeOrder.comment.replace(/;\s*SalesboxOrderID:.*/, ""),
-    );
-
-    if (!orderId) {
-      // the order comment doesn't contain salesbox order id
-      // this means the order wasn't made via salesbox app
-      return;
-    }
-
+  checkBonuses = async (data, next) => {
+    const { incomingOrder, order } = data;
+    const orderId = incomingOrder.id;
     try {
-      const salesboxOrder = await getSalesboxOrder(orderId);
-
-      const bonusesUsed = salesboxOrder.bonusesUsed;
-
-      if (!bonusesUsed) {
-        // the salesbox user hasn't applied any bonuses to the order
-        // short-circuiting
-        return;
-      }
-
-      Poster.orders.setOrderBonus(activeOrder.id, bonusesUsed);
-      // todo: change salesbox order status to accepted
-
-      // if bonuses have been applied to the order
-      // will they be overwritten by setOrderBonus or will they accumulate?
-      // Lest check it
-
-      const { approvedBonus, platformDiscount } = activeOrder;
-
-      if (approvedBonus || platformDiscount) {
-        const activeOrder = await Poster.orders.getActive();
-
-        logError({
-          approvedBonus,
-          platformDiscount,
-          bonusesUsed,
-          activeOrder,
-        });
-      }
-    } catch (error) {
+      const bonuses = await getOrder(orderId);
+      Poster.orders.setOrderBonus(order.id, bonuses.to_use);
+    } catch (e) {
+      console.warn(e.message);
       logError({
-        error: error.message,
-        stack: error.stack,
-        response: error.response,
-        request: error.request,
+        error: e.message,
+        stack: e.stack,
+        response: e.response,
+        request: e.request,
       });
     } finally {
       next();
@@ -75,7 +26,7 @@ export default class LoyaltyApp extends React.Component {
   };
 
   componentDidMount() {
-    Poster.on("incomingOrderAccepted", this.checkForCashback);
+    Poster.on("incomingOrderAccepted", this.checkBonuses);
     Poster.on("beforeOrderClose", (data, next) => {
       // I don't know why but when order is about to be closed
       // weird popup appears on the screen
